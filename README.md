@@ -3,7 +3,7 @@ antispam-antimalware IOC creator
 
 Don't hate on my bad PowerShell :)  
 
-The goal of my project is to have this kind of IOC.  
+The goal of my project is to have this kind of IOC (indicator of compromise).  
 
 type: phish  
 url: hXXps://evil[.]com/view/bank/pishing  
