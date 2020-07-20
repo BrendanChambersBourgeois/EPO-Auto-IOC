@@ -1,4 +1,5 @@
 ﻿#connect-ExchangeOnline -ShowProgress $true
+#Install-Package MimeKit
 
 function Get-Messages{ 
       Param (
@@ -16,7 +17,9 @@ foreach($call in $callm){
 $call_identity = $call | select -ExpandProperty Identity
 $call_file_path = $call_identity -replace "\\", "-"
 $pwd = Get-Location
-$e = Export-QuarantineMessage -Identity $call_identity; $bytes = [Convert]::FromBase64String($e.eml); [IO.File]::WriteAllBytes("$PSScriptRoot\$call_file_path.eml", $bytes)
+$tmp = Export-QuarantineMessage -Identity $call_identity
+$attachment = $tmp.eml | .".\EPO-Auto-IOC\EPO-Auto-IOC.exe"
+$attachment | Out-File -FilePath .\attachments\$call_file_path
 write-host $call_file_path 'saved'
 }
 }

@@ -76,7 +76,7 @@ $Report = $Report | select -ExpandProperty senderAddress | group
 # Display Top Phish and HighConfPhish in one table with %
 $Report | 
 select (
-@{N="Top Phish Recipient";E={$_.Name}},
+@{N="Top Phish Sender";E={$_.Name}},
 @{N="Message Count";E={$_.Count}},
 @{L="Percent";E={"{0:N2}"-f (($_.Count/($Report | Measure count -sum).sum).ToString("P"))}}) | 
 sort -Property "Message Count" -Descending | select -first 15
