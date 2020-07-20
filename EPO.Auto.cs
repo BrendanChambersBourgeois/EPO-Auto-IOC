@@ -1,7 +1,7 @@
-using System;
-using System.Text;
-using System.IO;
 using MimeKit;
+using System;
+using System.IO;
+using System.Text;
 
 namespace EPO_Auto_IOC
 {
@@ -10,22 +10,7 @@ namespace EPO_Auto_IOC
         static void Main()
         {
             // Build stringbuilder for encoded strings
-            var encodedStrings = new System.Text.StringBuilder();
-            while(true)
-            {
-                // Read standed in
-                string encodedString = Console.ReadLine();
-                // Empty line (last line)
-                if (string.IsNullOrEmpty(encodedString))
-                {
-                    break;
-                }
-                // add each string to stringbuilder
-                else
-                {
-                    encodedStrings.AppendLine(encodedString.ToString());
-                }
-            }
+            StringBuilder encodedStrings = BuildString();
             // Load a MimeMessage from string builder
             var message = MimeMessage.Load(GenerateStreamFromString(DecodeBase64(encodedStrings.ToString())));
             foreach (MimeEntity attachment in message.Attachments)
@@ -45,6 +30,29 @@ namespace EPO_Auto_IOC
                 }
             }
         }
+
+        private static StringBuilder BuildString()
+        {
+            var encodedStrings = new System.Text.StringBuilder();
+            while (true)
+            {
+                // Read standed in
+                string encodedString = Console.ReadLine();
+                // Empty line (last line)
+                if (string.IsNullOrEmpty(encodedString))
+                {
+                    break;
+                }
+                // add each string to stringbuilder
+                else
+                {
+                    encodedStrings.AppendLine(encodedString.ToString());
+                }
+            }
+
+            return encodedStrings;
+        }
+
         public static Stream GenerateStreamFromString(string s)
         {
             var stream = new MemoryStream();
