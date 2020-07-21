@@ -1,3 +1,4 @@
+//This Program will input base64 encoded .eml from standedin and output the attachment decoded to standedout
 using MimeKit;
 using System;
 using System.IO;
@@ -9,47 +10,34 @@ namespace EPO_Auto_IOC
     {
         private static void Main()
         {
-            // Build stringbuilder for encoded strings
-            StringBuilder encodedStrings = BuildString();
-            // Load a MimeMessage from string builder
-            MimeMessage message = MimeMessage.Load(GenerateStreamFromString(DecodeBase64(encodedStrings.ToString())));
+            string data = InputString().ToString(); // Input base64 encoded .eml from standedin
+            string encodeddata = Encoding.ASCII.GetString(Convert.FromBase64String(data)); // decode base64 data
+            MimeMessage message = MimeMessage.Load(GenerateStreamFromString(encodeddata)); // Load a MimeMessage from string builder
             foreach (MimeEntity attachment in message.Attachments)
             {
-                if (attachment is MessagePart)
+                MimePart part = (MimePart)attachment; // get the attachment part
+                using StreamReader reader = new StreamReader(part.Content.Open()); // Add stream with only attachemnt data
+                string value = reader.ReadToEnd();
+                /* TODO HTML encoding support
+                if (value.Contains("unescape"))
                 {
-                    MessagePart part = (MessagePart)attachment;
-                    Console.WriteLine(part);
+                    value = System.Net.WebUtility.HtmlDecode(value);
                 }
-                else
-                {
-                    MimePart part = (MimePart)attachment;
-                    Stream filename = part.Content.Open();
-                    using StreamReader reader = new StreamReader(filename);
-                    string value = reader.ReadToEnd();
-                    Console.WriteLine(value);
-                }
+                */
+                Console.WriteLine(value); // write value to standed out
             }
         }
 
-        private static StringBuilder BuildString()
+        private static StringBuilder InputString()
         {
-            StringBuilder encodedStrings = new StringBuilder();
-            while (true)
+            StringBuilder values = new StringBuilder();
+            string value = Console.ReadLine();
+            while (!string.IsNullOrEmpty(value))
             {
-                // Read standed in
-                string encodedString = Console.ReadLine();
-                // Empty line (last line)
-                if (string.IsNullOrEmpty(encodedString))
-                {
-                    break;
-                }
-                // add each string to stringbuilder
-                else
-                {
-                    _ = encodedStrings.AppendLine(encodedString.ToString());
-                }
+                values.AppendLine(value);
+                value = Console.ReadLine();
             }
-            return encodedStrings;
+            return values;
         }
 
         public static Stream GenerateStreamFromString(string s)
@@ -60,12 +48,6 @@ namespace EPO_Auto_IOC
             writer.Flush();
             stream.Position = 0;
             return stream;
-        }
-
-        private static string DecodeBase64(string base64EncodedValue)
-        {
-            byte[] data = Convert.FromBase64String(base64EncodedValue);
-            return Encoding.ASCII.GetString(data);
         }
     }
 }
