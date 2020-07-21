@@ -34,9 +34,10 @@ namespace EPO_Auto_IOC
                 //}
             // -------------------------------------------
             // TODO add attachment IOC list support 
-            // e.g
+            // e.g [url[ip,ip,ip,ip],url[ip]]
             // url: hXXps://evil[.]com/view/bank/pishing
             // ip: 12.34.56.78
+            // ip: 12.34.56.79
             // -------------------------------------------
             foreach (MimeEntity attachment in message.Attachments)
             {
@@ -53,6 +54,8 @@ namespace EPO_Auto_IOC
                     Uri myUri = new Uri(cleanUrl); // Full URL
                     string host = myUri.Host;  // Get only hostname
                     IPHostEntry hostname = Dns.GetHostEntry(host); // Get the dns of host
+                    // TODO change these into lists so they can be worked with later.
+                    // e.g. [url[ip,ip,ip,ip],url[ip]]
                     Console.WriteLine(cleanUrl);
                     foreach (IPAddress address in hostname.AddressList) // ip from each host
                     {
