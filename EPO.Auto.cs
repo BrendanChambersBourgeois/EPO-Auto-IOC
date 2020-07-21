@@ -3,6 +3,8 @@ using MimeKit;
 using System;
 using System.IO;
 using System.Text;
+using System.Text.RegularExpressions;
+using System.Web;
 
 namespace EPO_Auto_IOC
 {
@@ -18,13 +20,10 @@ namespace EPO_Auto_IOC
                 MimePart part = (MimePart)attachment; // get the attachment part
                 using StreamReader reader = new StreamReader(part.Content.Open()); // Add stream with only attachemnt data
                 string value = reader.ReadToEnd();
-                /* TODO HTML encoding support
-                if (value.Contains("unescape"))
-                {
-                    value = System.Net.WebUtility.HtmlDecode(value);
-                }
-                */
-                Console.WriteLine(value); // write value to standed out
+                if (value.Contains("unescape")) value = HttpUtility.UrlDecode(value); // Decode URL
+                value = HttpUtility.HtmlDecode(value); // Decode HTML
+                var linkParser = new Regex(@"http(s)?://([\w-]+\.)+[\w-]+(/[\w- ./?%&@=]*)?", RegexOptions.Compiled | RegexOptions.IgnoreCase); // Get URLS
+                foreach (Match m in linkParser.Matches(value)) Console.WriteLine(m); // find URLS and send to standedout
             }
         }
 
