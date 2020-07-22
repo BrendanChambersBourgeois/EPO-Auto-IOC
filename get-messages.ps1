@@ -1,5 +1,4 @@
 ﻿#connect-ExchangeOnline -ShowProgress $true
-#Install-Package MimeKit
 
 function Get-Messages
 { 
@@ -21,19 +20,8 @@ function Get-Messages
         $call_identity = $call | select -ExpandProperty Identity
         $call_file_path = $call_identity -replace "\\", "-"
         $tmp = Export-QuarantineMessage -Identity $call_identity
-        $input = $tmp.eml | .".\EPO-Auto-IOC\EPO-Auto-IOC.exe"
-        $url, $ip  = $input -split ','
-
-        $Result = "" | Select Identity,ReceivedTime,SenderAddress,Subject,Attachment,eml,urls
-        $Result.Identity = $call.Identity
-        $Result.ReceivedTime = $call.ReceivedTime
-        $Result.SenderAddress = $call.SenderAddress
-        $Result.Subject = $call.Subject
-        $Result.Attachment = $call.Attachment
-        $Result.eml = $tmp.eml
-        $Result.urls += $url
-        $Result.ips += $ip
-        $Array += $Result
+        $tmp.eml | .".\EPO-Auto-IOC\EPO-Auto-IOC.exe"
     }
 return $Array
 }
+
