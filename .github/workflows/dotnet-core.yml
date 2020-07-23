@@ -18,9 +18,7 @@ jobs:
       with:
         dotnet-version: 3.1.301
     - name: Install dependencies
-      run: |
-        npm install
-        dotnet restore
+      run: npm install
     - name: Build
       run: dotnet build --configuration Release --no-restore
     - name: Test
