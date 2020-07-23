@@ -1,57 +1,88 @@
 //This Program will input base64 encoded .eml from standedin and output the attachment decoded to standedout
 using MimeKit;
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Net;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
-using System.Net;
-using System.Collections.Generic;
-using System.Security.Cryptography;
-using System.Linq;
 
 namespace EPO_Auto_IOC
 {
     internal class Program
     {
+        class IOC
+        {
+            public string type;
+            public string tag;
+            public string from;
+            public string subject;
+            public Dictionary<List<string>, Dictionary<string, List<IPAddress>>> attachments;
+
+            // TODO Send all this to a file for each eml 
+            public void WriteToConsole()    // send to standed out
+            {
+                Console.WriteLine("");
+                Console.WriteLine("");
+                Console.WriteLine("");
+                Console.WriteLine("");
+                Console.WriteLine("");
+                Console.WriteLine("========================");
+                Console.WriteLine("type: {0}", type);
+                Console.WriteLine("tag: {0}", tag);
+                Console.WriteLine("from: {0}", from);
+                Console.WriteLine("subject: {0}", subject);
+                foreach (KeyValuePair<List<string>, Dictionary<string, List<IPAddress>>> attachment in attachments)
+                {
+                    Console.WriteLine("hash|filename: {0}|{1}", attachment.Key[1], attachment.Key[0]);
+                    foreach (KeyValuePair<string, List<IPAddress>> url in attachment.Value.OrderByDescending(i => i.Key))
+                    {
+                        Console.WriteLine("url: {0}", url.Key);
+                        foreach (IPAddress ip in url.Value)
+                        {
+                            Console.WriteLine("ip: {0}", ip);
+                        }
+                    }
+                }
+            }
+        }
+
         private static void Main()
         {
             // TODO replace all powershell.ps1 commands to C# 
             string data = GetInputString().ToString(); // Input base64 encoded .eml from standedin
             string encodeddata = Encoding.ASCII.GetString(Convert.FromBase64String(data)); // decode base64 data
             MimeMessage message = MimeMessage.Load(GenerateStreamFromString(encodeddata)); // Load a MimeMessage from string builder
-            // TODO Send all this to a file for each eml 
-            Console.WriteLine("");
-            Console.WriteLine("");
-            Console.WriteLine("");
-            Console.WriteLine("");
-            Console.WriteLine("");
-            Console.WriteLine("==========================");
-            Console.WriteLine("type: {0}", "Malware");
-            Console.WriteLine("tag: {0}", "TLP:green");
             string recipient = message.To.ToString();
-            Console.WriteLine("from: {0}", GetAnonymizer(message.From.ToString(), recipient));
-            Console.WriteLine("subject: {0}", GetAnonymizer(message.Subject, recipient));
+
+            IOC main = new IOC
+            {
+                type = "Malware",
+                tag = "TLP:green",
+                from = GetAnonymizer(message.From.ToString(), recipient),
+                subject = GetAnonymizer(message.Subject, recipient)
+            };
+
+            List<string> fileNameHash = new List<string>();
+            Dictionary<List<string>, Dictionary<string, List<IPAddress>>> attachments = new Dictionary<List<string>, Dictionary<string, List<IPAddress>>>();
+
             foreach (MimeEntity attachment in message.Attachments)
             {
+
                 MimePart part = (MimePart)attachment; // get the attachment part
-                string filename = part.FileName;
                 using StreamReader reader = new StreamReader(part.Content.Open()); // Add stream with only attachemnt data
                 string value = reader.ReadToEnd();
-
-                // Write Attachment IOC to StandedOutF
-                Console.WriteLine("hash|filename: {0}|{1}", GetHashString(value), GetAnonymizer(filename, recipient));
-                Dictionary<string, List<IPAddress>> urlDic = GetUrls(value);
-                foreach (KeyValuePair<string, List<IPAddress>> url in urlDic.OrderByDescending(i => i.Key))
-                {
-                    Console.WriteLine("url: {0}", url.Key);
-                    foreach (IPAddress ip in url.Value)
-                    {
-                        Console.WriteLine("ip: {0}", ip);
-                    }
-                }
+                fileNameHash.Add(part.FileName);
+                fileNameHash.Add(GetHashString(value));
+                attachments.Add(fileNameHash, new Dictionary<string, List<IPAddress>>(GetUrls(value)));
             }
 
+            main.attachments = attachments;
+
+            main.WriteToConsole(); 
             // by Sender e.g. <Victim.lastname@> Anonymizer bellow feilds  <fistname.lastname> or <firstname> or <lastname> or <firstname lastname> etc..
             // subject: Review for <Victim.lastname>
             // hash | filename: 3B7C5B5DFFFA2D7298AC631D55A6AC56B6B0BD427B53E650BEA47DE477666A6D | <Victim.lastname> - Victim.html
@@ -62,15 +93,15 @@ namespace EPO_Auto_IOC
 
                 if (dirtyString != null) // Get company name and replaces 
                 {
-                    Regex stingparser = new Regex(@"U[A-z]{7}", RegexOptions.Compiled | RegexOptions.IgnoreCase); 
+                    Regex stingparser = new Regex(@"U[A-z]{7}", RegexOptions.Compiled | RegexOptions.IgnoreCase);
                     cleanstring = stingparser.Replace(dirtyString.ToString(), "VictimCompany");
                 }
 
-                string user = recipient.Split("@")[0]; 
+                string user = recipient.Split("@")[0];
 
                 if (user.Split(".").Length > 1) // gets reciptient name and replaces
                 {
-                    string firstname  = user.Split(".")[0];
+                    string firstname = user.Split(".")[0];
                     string lastname = user.Split(".")[1];
                     cleanstring = cleanstring.Replace(firstname.ToString(), "FirstName");
                     cleanstring = cleanstring.Replace(lastname.ToString(), "LastName");
@@ -92,7 +123,7 @@ namespace EPO_Auto_IOC
                 List<IPAddress> ipList = new List<IPAddress>();
                 Regex urlParser = new Regex(@"([a-z0-9][-a-z0-9_\+\.]*[a-z0-9])@([a-z0-9][-a-z0-9\.]*[a-z0-9]\.)([a-z0-9][a-z0-9])", RegexOptions.Compiled | RegexOptions.IgnoreCase); // Get victims url and clean
                 string cleanUrl = urlParser.Replace(url.ToString(), "victim@example.com");
-                if (!urlDic.ContainsKey(cleanUrl) & (cleanUrl.Contains("@") || cleanUrl.Contains(".php"))) // If cleanurl in dic.key don't create dup
+                if (!urlDic.ContainsKey(cleanUrl))// & (cleanUrl.Contains("@") || cleanUrl.Contains(".php"))) // If cleanurl in dic.key don't create dup
                 {
                     Uri myUri = new Uri(cleanUrl); // Full URL
                     string host = myUri.Host;  // Get only hostname
