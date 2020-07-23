@@ -22,7 +22,6 @@ namespace EPO_Auto_IOC
             public string subject;
             public Dictionary<List<string>, Dictionary<string, List<IPAddress>>> attachments;
 
-            // TODO Send all this to a file for each eml 
             public void WriteToConsole() // send to standed out
             {
                 Console.WriteLine("");
@@ -49,7 +48,7 @@ namespace EPO_Auto_IOC
                 }
             }
 
-            public void WriteToFile()    // send to standed out
+            public void WriteToFile()    // send to file
             {
                 string filename = $@"IOC\{Guid.NewGuid()}-IOC.txt";
                 if (!File.Exists(filename))
@@ -86,7 +85,6 @@ namespace EPO_Auto_IOC
             string encodeddata = Encoding.ASCII.GetString(Convert.FromBase64String(data)); // decode base64 data
             MimeMessage message = MimeMessage.Load(GenerateStreamFromString(encodeddata)); // Load a MimeMessage from string builder
             string recipient = message.To.ToString();
-
             IOC main = new IOC
             {
                 type = "Malware",
@@ -94,10 +92,8 @@ namespace EPO_Auto_IOC
                 from = GetAnonymizer(message.From.ToString(), recipient),
                 subject = GetAnonymizer(message.Subject, recipient)
             };
-
             List<string> fileNameHash = new List<string>();
             Dictionary<List<string>, Dictionary<string, List<IPAddress>>> attachments = new Dictionary<List<string>, Dictionary<string, List<IPAddress>>>();
-
             foreach (MimeEntity attachment in message.Attachments)
             {
 
@@ -108,15 +104,9 @@ namespace EPO_Auto_IOC
                 fileNameHash.Add(GetHashString(value));
                 attachments.Add(fileNameHash, new Dictionary<string, List<IPAddress>>(GetUrls(value)));
             }
-
             main.attachments = attachments;
-
             // main.WriteToConsole();
             if (attachments.Values.Count() > 0) main.WriteToFile();
-
-            // by Sender e.g. <Victim.lastname@> Anonymizer bellow feilds  <fistname.lastname> or <firstname> or <lastname> or <firstname lastname> etc..
-            // subject: Review for <Victim.lastname>
-            // hash | filename: 3B7C5B5DFFFA2D7298AC631D55A6AC56B6B0BD427B53E650BEA47DE477666A6D | <Victim.lastname> - Victim.html
 
             static string GetAnonymizer(string dirtyString, string recipient)
             {
@@ -127,9 +117,7 @@ namespace EPO_Auto_IOC
                     Regex stingparser = new Regex(@"U[A-z]{7}", RegexOptions.Compiled | RegexOptions.IgnoreCase);
                     cleanstring = stingparser.Replace(dirtyString.ToString(), "VictimCompany");
                 }
-
                 string user = recipient.Split("@")[0];
-
                 if (user.Split(".").Length > 1) // gets reciptient name and replaces
                 {
                     string firstname = user.Split(".")[0];
@@ -138,7 +126,6 @@ namespace EPO_Auto_IOC
                     cleanstring = cleanstring.Replace(lastname.ToString(), "LastName", StringComparison.OrdinalIgnoreCase);
                 }
                 return cleanstring;
-
             }
         }
 
