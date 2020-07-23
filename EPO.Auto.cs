@@ -23,7 +23,7 @@ namespace EPO_Auto_IOC
             public Dictionary<List<string>, Dictionary<string, List<IPAddress>>> attachments;
 
             // TODO Send all this to a file for each eml 
-            public void WriteToConsole()    // send to standed out
+            public void WriteToConsole() // send to standed out
             {
                 Console.WriteLine("");
                 Console.WriteLine("");
