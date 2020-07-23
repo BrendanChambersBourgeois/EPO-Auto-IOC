@@ -1,4 +1,4 @@
-//This Program will input base64 encoded .eml from standedin and output the attachment decoded to standedout
+﻿//This Program will input base64 encoded .eml from standedin and output the attachment decoded to standedout
 using MimeKit;
 using System;
 using System.Collections.Generic;
@@ -23,7 +23,7 @@ namespace EPO_Auto_IOC
             public Dictionary<List<string>, Dictionary<string, List<IPAddress>>> attachments;
 
             // TODO Send all this to a file for each eml 
-            public void WriteToConsole() // send to standed out
+            public void WriteToConsole()    // send to standed out
             {
                 Console.WriteLine("");
                 Console.WriteLine("");
@@ -81,7 +81,7 @@ namespace EPO_Auto_IOC
 
         private static void Main()
         {
-            // TODO replace all powershell.ps1 commands to C#  
+            // TODO replace all powershell.ps1 commands to C# 
             string data = GetInputString().ToString(); // Input base64 encoded .eml from standedin
             string encodeddata = Encoding.ASCII.GetString(Convert.FromBase64String(data)); // decode base64 data
             MimeMessage message = MimeMessage.Load(GenerateStreamFromString(encodeddata)); // Load a MimeMessage from string builder
