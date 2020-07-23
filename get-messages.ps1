@@ -1,5 +1,4 @@
 ﻿#connect-ExchangeOnline -ShowProgress $true
-
 function Get-Messages
 { 
       Param (
@@ -7,14 +6,10 @@ function Get-Messages
           # Date 'MM/dd/yyyy'
           [String]$StartReceivedDate = (Get-Date).addMonths(-1)
       )
-    $m = {}
-    $callm = {}
     #QuarantineMessage
-    $m = Get-QuarantineMessage -StartReceivedDate (Get-Date).AddDays(-1) -PageSize 100 -QuarantineTypes malware
+    $m = Get-QuarantineMessage -StartReceivedDate (Get-Date).Addhours(-64) -PageSize 100 -QuarantineTypes malware
     #QuarantineMessage with html/htm - likly call phishing
     $callm = $m | Preview-QuarantineMessage | where {$_.attachment -like '*.html' -or $_.attachment -like '*.htm'}
-    $Array = @()
-    $urls = @()
     foreach($call in $callm)
     {
         $call_identity = $call | select -ExpandProperty Identity
@@ -23,6 +18,5 @@ function Get-Messages
         $tmp.eml | ."$PSScriptRoot\EPO-Auto-IOC\EPO-Auto-IOC.exe"
         
     }
-return $Array
 }
 
