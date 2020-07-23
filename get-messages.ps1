@@ -20,7 +20,7 @@ function Get-Messages
         $call_identity = $call | select -ExpandProperty Identity
         $call_file_path = $call_identity -replace "\\", "-"
         $tmp = Export-QuarantineMessage -Identity $call_identity
-        $tmp.eml | .".\EPO-Auto-IOC\EPO-Auto-IOC.exe"
+        $tmp.eml | ."$PSScriptRoot\EPO-Auto-IOC\EPO-Auto-IOC.exe"
     }
 return $Array
 }

@@ -20,7 +20,7 @@ namespace EPO_Auto_IOC
             string data = GetInputString().ToString(); // Input base64 encoded .eml from standedin
             string encodeddata = Encoding.ASCII.GetString(Convert.FromBase64String(data)); // decode base64 data
             MimeMessage message = MimeMessage.Load(GenerateStreamFromString(encodeddata)); // Load a MimeMessage from string builder
-            // TODO Send all this shit to a file for each eml 
+            // TODO Send all this to a file for each eml 
             Console.WriteLine("");
             Console.WriteLine("");
             Console.WriteLine("");
@@ -29,8 +29,9 @@ namespace EPO_Auto_IOC
             Console.WriteLine("==========================");
             Console.WriteLine("type: {0}", "Malware");
             Console.WriteLine("tag: {0}", "TLP:green");
-            Console.WriteLine("from: {0}", GetAnonymizer(message.From.ToString()));
-            Console.WriteLine("subject: {0}", GetAnonymizer(message.Subject));
+            string recipient = message.To.ToString();
+            Console.WriteLine("from: {0}", GetAnonymizer(message.From.ToString(), recipient));
+            Console.WriteLine("subject: {0}", GetAnonymizer(message.Subject, recipient));
             foreach (MimeEntity attachment in message.Attachments)
             {
                 MimePart part = (MimePart)attachment; // get the attachment part
@@ -39,7 +40,7 @@ namespace EPO_Auto_IOC
                 string value = reader.ReadToEnd();
 
                 // Write Attachment IOC to StandedOutF
-                Console.WriteLine("hash|filename: {0}|{1}", GetHashString(value), GetAnonymizer(filename));
+                Console.WriteLine("hash|filename: {0}|{1}", GetHashString(value), GetAnonymizer(filename, recipient));
                 Dictionary<string, List<IPAddress>> urlDic = GetUrls(value);
                 foreach (KeyValuePair<string, List<IPAddress>> url in urlDic.OrderByDescending(i => i.Key))
                 {
@@ -51,18 +52,31 @@ namespace EPO_Auto_IOC
                 }
             }
 
-            // TODO  by Sender e.g. <Victim.lastname@> Anonymizer bellow feilds  <fistname.lastname> or <firstname> or <lastname> or <firstname lastname> etc..
+            // by Sender e.g. <Victim.lastname@> Anonymizer bellow feilds  <fistname.lastname> or <firstname> or <lastname> or <firstname lastname> etc..
             // subject: Review for <Victim.lastname>
             // hash | filename: 3B7C5B5DFFFA2D7298AC631D55A6AC56B6B0BD427B53E650BEA47DE477666A6D | <Victim.lastname> - Victim.html
 
-            static string GetAnonymizer(string dirtyString)
+            static string GetAnonymizer(string dirtyString, string recipient)
             {
-                if (dirtyString != null)
+                string cleanstring = null;
+
+                if (dirtyString != null) // Get company name and replaces 
                 {
-                    Regex stingparser = new Regex(@"U[A-z]{7}", RegexOptions.Compiled | RegexOptions.IgnoreCase); // Get URLS
-                    return stingparser.Replace(dirtyString.ToString(), "Victim");
+                    Regex stingparser = new Regex(@"U[A-z]{7}", RegexOptions.Compiled | RegexOptions.IgnoreCase); 
+                    cleanstring = stingparser.Replace(dirtyString.ToString(), "VictimCompany");
                 }
-                return null;
+
+                string user = recipient.Split("@")[0]; 
+
+                if (user.Split(".").Length > 1) // gets reciptient name and replaces
+                {
+                    string firstname  = user.Split(".")[0];
+                    string lastname = user.Split(".")[1];
+                    cleanstring = cleanstring.Replace(firstname.ToString(), "FirstName");
+                    cleanstring = cleanstring.Replace(lastname.ToString(), "LastName");
+                }
+                return cleanstring;
+
             }
         }
 
@@ -131,3 +145,4 @@ namespace EPO_Auto_IOC
         }
     }
 }
+
