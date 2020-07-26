@@ -1,4 +1,6 @@
 ﻿//This Program will input base64 encoded .eml from standedin and output the attachment decoded to standedout
+// TODO add support for email body and other attachments.
+// TODO create a % of how bad the webpage may be. 
 using MimeKit;
 using System;
 using System.Collections.Generic;
@@ -96,7 +98,6 @@ namespace EPO_Auto_IOC
             Dictionary<List<string>, Dictionary<string, List<IPAddress>>> attachments = new Dictionary<List<string>, Dictionary<string, List<IPAddress>>>();
             foreach (MimeEntity attachment in message.Attachments)
             {
-
                 MimePart part = (MimePart)attachment; // get the attachment part
                 using StreamReader reader = new StreamReader(part.Content.Open()); // Add stream with only attachemnt data
                 string value = reader.ReadToEnd();
