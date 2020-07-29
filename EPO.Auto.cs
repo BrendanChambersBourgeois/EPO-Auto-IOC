@@ -133,6 +133,7 @@ namespace EPO_Auto_IOC
             Dictionary<List<string>, Dictionary<string, List<IPAddress>>> attachments = new Dictionary<List<string>, Dictionary<string, List<IPAddress>>>();
             foreach (MimeEntity attachment in message.Attachments)
             {
+                if (attachment is MessagePart) break;
                 MimePart part = (MimePart)attachment; // get the attachment part
                 using StreamReader reader = new StreamReader(part.Content.Open()); // Add stream with only attachemnt data
                 string value = reader.ReadToEnd();
@@ -174,7 +175,7 @@ namespace EPO_Auto_IOC
         {
             List<String> domainList = new List<String>();
             Dictionary<string, List<IPAddress>> urlDic = new Dictionary<string, List<IPAddress>>();
-            if (value == null) return null;
+            if (value == null) return urlDic;
             value = HttpUtility.UrlDecode(value); // Decode URL
             value = HttpUtility.HtmlDecode(value); // Decode HTML
             Regex linkParser = new Regex(@"http(s)?://([\w-]+\.)+[\w-]+(/[\w-./?%&@#=]*)?", RegexOptions.Compiled | RegexOptions.IgnoreCase); // Get URLS
@@ -185,7 +186,7 @@ namespace EPO_Auto_IOC
                 List<IPAddress> ipList = new List<IPAddress>();
                 Regex urlParser = new Regex(@"([a-z0-9][-a-z0-9_\+\.]*[a-z0-9])@([a-z0-9][-a-z0-9\.]*[a-z0-9]\.)([a-z0-9][a-z0-9])", RegexOptions.Compiled | RegexOptions.IgnoreCase); // Get victims url and clean
                 string cleanUrl = urlParser.Replace(url.ToString(), "victim@example.com");
-                if (!urlDic.ContainsKey(cleanUrl) & (cleanUrl.Contains("@") || cleanUrl.Contains(".php"))) // If cleanurl in dic.key don't create dup
+                if (!urlDic.ContainsKey(cleanUrl)) //& (cleanUrl.Contains("@") || cleanUrl.Contains(".php"))) // If cleanurl in dic.key don't create dup
                 {
                     Uri myUri = new Uri(cleanUrl); // Full URL
                     string host = myUri.Host;  // Get only hostname
@@ -200,14 +201,14 @@ namespace EPO_Auto_IOC
                         }
                         catch (Exception e) when (e.Message == "No such host is known.")
                         {
-                            return null;
+                            break;
                         }
                     }
                     urlDic.Add(cleanUrl, new List<IPAddress>(ipList));
                 }
                 else
                 {
-                    return null;
+                    break;
                 }
 
                 
