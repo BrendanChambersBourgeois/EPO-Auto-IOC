@@ -1,6 +1,14 @@
 ﻿# connect-ExchangeOnline -ShowProgress $true
 function Get-Messages
 { 
+    Param (
+            [Parameter(Mandatory=$false)]
+            # Date 'MM/dd/yyyy'
+            [String]$StartReceivedDate = (Get-Date).addMonths(-1),
+            $MaxThreads = 60,
+            $SleepTimer = 250,
+            $MaxWaitAtEnd = 300,
+            $OutputType = "Text")
     $messagecount = 1
     $i = 1
     while($messagecount -gt 0)

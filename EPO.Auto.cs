@@ -96,7 +96,6 @@ namespace EPO_Auto_IOC
                 {
                     Console.WriteLine("File Error");
                 }
-
                 static string urlDefang(string String)
                 {
                     String = String.Replace(@"http://", @"hxxp://", StringComparison.OrdinalIgnoreCase);
@@ -210,8 +209,6 @@ namespace EPO_Auto_IOC
                 {
                     break;
                 }
-
-                
             }
             return urlDic;
         }
