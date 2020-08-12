@@ -3,3 +3,4 @@ IOC/
 bin/
 obj/
 .vs/
+packages/
